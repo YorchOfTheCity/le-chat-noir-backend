@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var express = require("express");
-var middlewares = require("./middlewares");
-var authentication_1 = require("./authentication");
-var db = require("./db");
+const express = require("express");
+const middlewares = require("./middlewares");
+const authentication_1 = require("./authentication");
+const db = require("./db");
 var http = require('http');
 var path = require('path');
 var app = express();
@@ -23,7 +23,7 @@ app.all('/login', authentication_1.auth.login);
 app.get('/api/v1/userAvailable', db.userAvailable);
 // app.use('/api/v1/secure/*', [require('./middlewares/validateRequest')]);
 app.all('*', function (req, res) {
-    var response = { message: 'working!' };
+    const response = { message: 'working!' };
     res.json(JSON.stringify(response));
 });
 /* Start the Server */

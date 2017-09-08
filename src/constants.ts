@@ -1,0 +1,1 @@
+export const MONGO_URL = process.env.MONGO_DB || 'mongodb://localhost/le-chat-noir';

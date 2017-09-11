@@ -6,7 +6,16 @@ const authentication_1 = require("./authentication");
 const db = require("./db");
 var http = require('http');
 var path = require('path');
+var bodyParser = require('body-parser');
 var app = express();
+let user;
+/**
+ * Standard middewares
+ */
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+app.use(bodyParser.json());
 /**
  * TODO:
  *  auth: Get username/password, authenticate, then use authentication middleware for all other entry points
@@ -16,12 +25,19 @@ var app = express();
  *  Angular: Store and send the token with each request (do it in the dbService?) and implement canActivate in routes.
  */
 app.use('', middlewares.setHeaders);
-app.all('/login', authentication_1.auth.login);
+app.get('/api/v1/login', authentication_1.auth.login);
+app.post('/api/v1/user', db.insertUser);
 /**
  * Non authenticated services for available username/email in signup screen
  */
 app.get('/api/v1/userAvailable', db.userAvailable);
-// app.use('/api/v1/secure/*', [require('./middlewares/validateRequest')]);
+app.get('/api/v1/emailAvailable', db.emailAvailable);
+// Service for signup
+// app.post('/api/v1/userAvailable')
+/**
+ * Authentication middleware
+ */
+app.use('/api/v1/secure/*', authentication_1.auth.validToken);
 app.all('*', function (req, res) {
     const response = { message: 'working!' };
     res.json(JSON.stringify(response));

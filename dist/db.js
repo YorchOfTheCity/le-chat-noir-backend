@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const PWDHash = require("password-hash-and-salt");
 const user_1 = require("./schemas/user");
 const constants = require("./constants");
+const authentication_1 = require("./authentication");
 mongoose.connect(constants.MONGO_URL);
 // Mongoose's promise library is deprecated, we'll switch it here with node's default one:
 mongoose.Promise = global.Promise;
@@ -30,9 +31,9 @@ function userAvailable(req, res) {
 exports.userAvailable = userAvailable;
 function insertUser(req, res) {
     let user = { name: req.body.username, email: req.body.email, pwdHash: req.body.password };
-    saveUser(user).then((userDocument) => {
+    saveUser(user).then((userDoc) => {
         // success
-        res.json({ userDocument, success: true });
+        res.json(authentication_1.auth.genToken(new user_1.User(userDoc.name, userDoc.email, null)));
     }, (error) => {
         // reject
         res.status(500);

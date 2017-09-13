@@ -4,6 +4,7 @@ import * as PWDHash from 'password-hash-and-salt';
 
 import { User, UsersModel, UserDocument } from './schemas/user';
 import * as constants from './constants';
+import { auth } from './authentication'
 
 mongoose.connect(constants.MONGO_URL);
 // Mongoose's promise library is deprecated, we'll switch it here with node's default one:
@@ -39,9 +40,9 @@ export function insertUser(req: Request, res: Response) {
   let user: User = { name: req.body.username, email: req.body.email, pwdHash: req.body.password }
 
   saveUser(user).then(
-    (userDocument: UserDocument) => {
+    (userDoc: UserDocument) => {
       // success
-      res.json({ userDocument, success: true });
+      res.json(auth.genToken(new User(userDoc.name, userDoc.email, null)));
     },
     (error: Error) => {
       // reject

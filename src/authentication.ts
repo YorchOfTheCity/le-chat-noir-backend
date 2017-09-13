@@ -96,10 +96,11 @@ export var auth = {
   getUser(req: Request): User{
     const json = JSON.parse(req.query.body);
     return json.user;
-  }
+  },
+
+  genToken
 }
 
-// private method
 function genToken(user: User) {
   var expires = expiresIn(TOKEN_EXPIRATION_DAYS);
   var token = jwt.encode({

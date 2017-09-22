@@ -3,7 +3,11 @@ import * as mongoose from 'mongoose'
 // 1) CLASS
 export class User {
 
-  constructor(public name: string, public email: string, public pwdHash: string){}
+  constructor(public name: string, public email: string, public pwdHash: string, public contacts?: {name:string}[]){
+    if(!this.contacts) {
+      this.contacts = [];
+    }
+  }
   /* any method would be defined here*/
   // foo(): string {
   //    return this.name.uppercase() // whatever
@@ -14,7 +18,8 @@ export class User {
 var schema = new mongoose.Schema({
   name: { required: true, type: String, lowercase: true, index: { unique: true } },
   email: { required: true, type: String, lowercase: true, index: { unique: true } },
-  pwdHash: { required: true, type: String}
+  pwdHash: { required: true, type: String},
+  contacts: [ { name: { type: String } } ]
 })
 // register each method at schema
 // schema.method('foo', User.prototype.foo)

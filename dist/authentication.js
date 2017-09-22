@@ -31,7 +31,7 @@ exports.auth = {
             if (userDoc) {
                 // If authentication is success, we will generate a token
                 // and dispatch it to the client
-                res.json(genToken(new user_1.User(userDoc.name, userDoc.email, null)));
+                res.json(genToken(new user_1.User(userDoc.name, userDoc.email, null, null)));
             }
         }, (rejectedReason) => {
             res.status(401);
@@ -42,49 +42,48 @@ exports.auth = {
         });
     },
     validToken(req, res, next) {
-        console.log('debugging');
-        const json = JSON.parse(req.query.body);
-        const token = json.token;
-        const user = json.user;
-        let decoded;
-        try {
-            decoded = jwt.decode(token, TOKEN_SECRET);
-        }
-        catch (e) {
-            // Token is invalid, can't be decoded;
-            // "Error: Signature verification failed"
+        let json = req.headers['x-access-token'];
+        const jsonObject = JSON.parse(json);
+        const token = jsonObject.token;
+        const user = jsonObject.user;
+        const validation = checkToken(token, user);
+        if (validation.expired) {
             res.status(401);
-            res.json({
+            return res.json({
                 'status': 401,
-                'message': 'Invalid token'
+                'message': 'Session expired'
             });
         }
-        if (user.name === decoded.user.name && user.email === decoded.user.email) {
-            if (decoded.expires > new Date().getTime()) {
-                // Valid, fill un with the user info and let him through:
-                next();
-            }
-            else {
-                // expired
-                res.status(401);
-                res.json({
-                    'status': 401,
-                    'message': 'Session expired'
-                });
-            }
-        }
-        else {
-            // invalid token
+        else if (validation.invalid) {
             res.status(401);
             res.json({
                 'status': 401,
                 'message': 'Invalid credentials'
             });
         }
+        else if (validation.valid) {
+            db.getUserInner(user.name).then((dbUser) => {
+                req.user = dbUser;
+                return next();
+            });
+        }
+        else {
+            // validation.error
+            // Token is invalid, can't be decoded;
+            // "Error: Signature verification failed"
+            res.status(401);
+            return res.json({
+                'status': 401,
+                'message': 'Invalid token'
+            });
+        }
     },
     getUser(req) {
         const json = JSON.parse(req.query.body);
         return json.user;
+    },
+    tokenValidSocket({ token, user }) {
+        return checkToken(token, user);
     },
     genToken
 };
@@ -104,5 +103,30 @@ function genToken(user) {
 function expiresIn(numDays) {
     var dateObj = new Date();
     return dateObj.getTime() + (TOKEN_EXPIRATION_DAYS * MILLIS_IN_DAY);
+}
+function checkToken(token, user) {
+    let decoded;
+    try {
+        decoded = jwt.decode(token, TOKEN_SECRET);
+    }
+    catch (e) {
+        // Token is invalid, can't be decoded;
+        // "Error: Signature verification failed"
+        return { error: true };
+    }
+    if (user.name === decoded.user.name && user.email === decoded.user.email) {
+        if (decoded.expires > new Date().getTime()) {
+            // Valid, fill un with the user info and let him through:
+            return { valid: true };
+        }
+        else {
+            // expired
+            return { expired: true };
+        }
+    }
+    else {
+        // invalid token
+        return { invalid: true };
+    }
 }
 //# sourceMappingURL=authentication.js.map

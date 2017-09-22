@@ -5,12 +5,15 @@ import { User, UserDocument, UsersModel } from '../schemas/user';
 import * as db from '../db';
 
 const users = [
-  new User('yorch', 'yorch@tekmexico.com', 'qwertyuiop'),
-  new User('angie', 'angie@tekmexico.com', 'qwertyuiop'),
-  new User('lalo', 'lalo@tekmexico.com', 'qwertyuiop'),
+  new User('yorch', 'yorch@tekmexico.com', 'qwertyuiop', 
+          [ {name: 'lalo'} ] ),
+  new User('angie', 'angie@tekmexico.com', 'qwertyuiop', 
+          [ {name: 'lalo'} ] ),
+  new User('lalo', 'lalo@tekmexico.com', 'qwertyuiop', []),
 ];
 
 db.dropDatabase().then( () =>
 users.forEach(user => {
+  console.dir(user);
   db.saveUser(user);
 }));

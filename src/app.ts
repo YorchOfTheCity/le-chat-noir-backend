@@ -1,17 +1,26 @@
 import * as express from 'express';
-import * as middlewares from './middlewares';
+import * as socketIO from 'socket.io';
 
+import * as middlewares from './middlewares';
 import { auth } from './authentication';
 import * as db from './db';
 import { User } from './schemas/user';
+import { ioMain } from './socketsComm';
 
-var http = require('http');
 var path = require('path');
 var bodyParser = require('body-parser');
-
 var app = express();
+var http = require('http');
+
+
+var httpServer = http.createServer(app);
+
+var io = socketIO(httpServer);
 
 let user: User;
+
+
+io.on('connection', ioMain);
 
 /**
  * Standard middewares
@@ -49,6 +58,12 @@ app.get('/api/v1/emailAvailable', db.emailAvailable);
  */
 app.use('/api/v1/secure/*', auth.validToken);
 
+app.get('/api/v1/secure/contacts', db.getContacts);
+app.get('/api/v1/secure/invites', db.getInvitesHttp);
+
+// app.post('/api/v1/secure/contacts/:contact', db.addContact);
+app.post('/api/v1/secure/contacts/invite/:contact', db.inviteContact);
+
 app.all('*', function(req, res) {
   const response = {message: 'working!'};
   res.json(JSON.stringify(response));
@@ -56,6 +71,6 @@ app.all('*', function(req, res) {
 
 /* Start the Server */
 app.set('port', process.env.PORT || 3000);
-http.createServer(app).listen(app.get('port'), function(){
+httpServer.listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });

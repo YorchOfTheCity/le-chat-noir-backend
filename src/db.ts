@@ -245,7 +245,11 @@ export function getUserInner(username: String): Promise<UserDocument> {
 }
 
 export function getInvites(username: String): Promise<InviteDocument[]> {
-  return InviteModel.find({ name: username }).exec();
+  return InviteModel.find({ contact: username }).exec();
+}
+
+export function getNonRespondedInvites(username: String): Promise<InviteDocument[]> {
+  return InviteModel.find({ contact: username, accept: undefined }).exec();
 }
 
 export function getInvite(username: String, contactName: String): Promise<InviteDocument> {

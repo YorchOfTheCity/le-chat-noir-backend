@@ -232,9 +232,13 @@ function getUserInner(username) {
 }
 exports.getUserInner = getUserInner;
 function getInvites(username) {
-    return invite_1.InviteModel.find({ name: username }).exec();
+    return invite_1.InviteModel.find({ contact: username }).exec();
 }
 exports.getInvites = getInvites;
+function getNonRespondedInvites(username) {
+    return invite_1.InviteModel.find({ contact: username, accept: undefined }).exec();
+}
+exports.getNonRespondedInvites = getNonRespondedInvites;
 function getInvite(username, contactName) {
     return invite_1.InviteModel.findOne({ name: username, contact: contactName }).exec();
 }

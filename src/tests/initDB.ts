@@ -10,7 +10,8 @@ const users = [
     [{ name: 'lalo' }]),
   new User('angie', 'angie@tekmexico.com', 'qwertyuiop',
     [{ name: 'lalo' }]),
-  new User('lalo', 'lalo@tekmexico.com', 'qwertyuiop', []),
+  new User('lalo', 'lalo@tekmexico.com', 'qwertyuiop', [{ name: 'yorch' }, { name: 'angie' }]),
+
 ];
 
 const invites = [

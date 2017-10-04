@@ -18,7 +18,8 @@ const EVENTS = {
     // tslint:disable-next-line:max-line-length
     ACK_INVITE_RESULT: 'acknowledgeInviteResult', // For the inviter to acknowledge that his invite was accepted/canceled (and delete invite from db)
     INVITE_RESPONSE: 'inviteResponse',// To accept/reject invite.
-    START_CHAT: 'startChat'
+    START_CHAT: 'startChat',
+    NEW_MESSAGE: 'sendMessage'
 };
 
 // Mirrored in frontend
@@ -27,6 +28,14 @@ export interface ChatRoom {
     owner: string;
     contacts: string[];
     roomName: string;
+}
+
+// Mirrored in frontend
+interface Message {
+    chatRoomName: string;
+    sender: string;
+    content: string;
+    isDoodle?: boolean; // check doodle logic.
 }
 
 
@@ -44,6 +53,7 @@ const onlineUsersSubject = new Rx.Subject<ContactsAction>();
 export const inviteRequestSubject = new Rx.Subject();
 const inviteAckSubject = new Rx.Subject<Invite>(); // This triggers an 'invite accepted/rejected' to the inviter.
 const startChatSubject = new Rx.Subject<ChatRoom>();
+const messagesSubject = new Rx.Subject<Message>();
 
 
 function addOnlineUser(user: User) {
@@ -67,6 +77,7 @@ export function ioMain(socket: SocketIO.Socket) {
     let inviteRequestSubscription: Rx.Subscription;
     let inviteAckSubscription: Rx.Subscription;
     let startChatSubscription: Rx.Subscription;
+    let messagesSubscription: Rx.Subscription;
 
     contactsSubscription = Rx.Observable.from(onlineUsersSubject)
         .filter((ouAction: ContactsAction) => { // Only users in contacts
@@ -104,6 +115,10 @@ export function ioMain(socket: SocketIO.Socket) {
         .filter((chatRoom: ChatRoom) => chatRoom.contacts.indexOf(user.name) !== -1 )
         .subscribe( (chatRoom: ChatRoom) => {
             socket.emit(EVENTS.START_CHAT, chatRoom);
+            // We have the chatroom in this closure, so we'll subscribe the invited party here
+            Rx.Observable.from(messagesSubject)
+            .filter( (message) => message.chatRoomName === chatRoom.roomName && message.sender !== user.name)
+            .subscribe( message => socket.emit(EVENTS.NEW_MESSAGE, message));
         });
 
     socket.on(EVENTS.AUTHENTICATE, (data: any) => {
@@ -193,5 +208,13 @@ export function ioMain(socket: SocketIO.Socket) {
 
     socket.on(EVENTS.START_CHAT, (chatRoom: ChatRoom) => {
         startChatSubject.next(chatRoom);
+        // Subscribe the requester here to the messageSubject
+        Rx.Observable.from(messagesSubject)
+        .filter( (message) => message.chatRoomName === chatRoom.roomName && message.sender !== user.name)
+        .subscribe( message => socket.emit(EVENTS.NEW_MESSAGE, message));
+    });
+
+    socket.on(EVENTS.NEW_MESSAGE, (message: Message) => {
+        messagesSubject.next(message);
     });
 }

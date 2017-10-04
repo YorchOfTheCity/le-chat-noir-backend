@@ -6,7 +6,7 @@ const invite_1 = require("../schemas/invite");
 const users = [
     new user_1.User('yorch', 'yorch@tekmexico.com', 'qwertyuiop', [{ name: 'lalo' }]),
     new user_1.User('angie', 'angie@tekmexico.com', 'qwertyuiop', [{ name: 'lalo' }]),
-    new user_1.User('lalo', 'lalo@tekmexico.com', 'qwertyuiop', []),
+    new user_1.User('lalo', 'lalo@tekmexico.com', 'qwertyuiop', [{ name: 'yorch' }, { name: 'angie' }]),
 ];
 const invites = [
     new invite_1.Invite('yorch', 'angie', undefined),

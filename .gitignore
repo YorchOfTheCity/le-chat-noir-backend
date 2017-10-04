@@ -4,3 +4,6 @@
 node_modules/
 
 dist/
+npm-debug.log*
+dist/crypto.js.map
+dist/crypto.js

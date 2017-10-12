@@ -4,6 +4,7 @@
 node_modules/
 
 dist/
+angular2/
 npm-debug.log*
 dist/crypto.js.map
 dist/crypto.js

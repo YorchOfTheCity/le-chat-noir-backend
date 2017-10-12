@@ -1,5 +1,6 @@
 import * as express from 'express';
 import * as socketIO from 'socket.io';
+var fs = require('fs');
 
 import * as middlewares from './middlewares';
 import { auth } from './authentication';
@@ -10,10 +11,14 @@ import { ioMain } from './socketsComm';
 var path = require('path');
 var bodyParser = require('body-parser');
 var app = express();
-var http = require('http');
+
+var httpx = require('https'); // require('http');
 
 
-var httpServer = http.createServer(app);
+var httpServer = httpx.createServer({
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem')
+}, app);
 
 var io = socketIO(httpServer);
 
@@ -29,6 +34,8 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 app.use(bodyParser.json());
+
+app.use(express.static('angular2'));
 
 /**
  * TODO:

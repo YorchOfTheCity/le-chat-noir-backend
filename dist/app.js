@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const socketIO = require("socket.io");
+var fs = require('fs');
 const middlewares = require("./middlewares");
 const authentication_1 = require("./authentication");
 const db = require("./db");
@@ -9,8 +10,11 @@ const socketsComm_1 = require("./socketsComm");
 var path = require('path');
 var bodyParser = require('body-parser');
 var app = express();
-var http = require('http');
-var httpServer = http.createServer(app);
+var httpx = require('https'); // require('http');
+var httpServer = httpx.createServer({
+    key: fs.readFileSync('key.pem'),
+    cert: fs.readFileSync('cert.pem')
+}, app);
 var io = socketIO(httpServer);
 let user;
 io.on('connection', socketsComm_1.ioMain);
@@ -21,6 +25,7 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(bodyParser.json());
+app.use(express.static('angular2'));
 /**
  * TODO:
  *  auth: Get username/password, authenticate, then use authentication middleware for all other entry points
